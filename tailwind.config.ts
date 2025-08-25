@@ -52,6 +52,11 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				status: {
+					healthy: 'hsl(var(--status-healthy))',
+					caution: 'hsl(var(--status-caution))',
+					critical: 'hsl(var(--status-critical))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -67,6 +72,20 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'gradient-primary': 'var(--gradient-primary)',
+				'gradient-card': 'var(--gradient-card)',
+				'gradient-status-healthy': 'var(--gradient-status-healthy)',
+				'gradient-status-caution': 'var(--gradient-status-caution)',
+				'gradient-status-critical': 'var(--gradient-status-critical)'
+			},
+			boxShadow: {
+				'automotive': 'var(--shadow-automotive)',
+				'glow-primary': 'var(--shadow-glow-primary)',
+				'glow-healthy': 'var(--shadow-glow-healthy)',
+				'glow-caution': 'var(--shadow-glow-caution)',
+				'glow-critical': 'var(--shadow-glow-critical)'
 			},
 			keyframes: {
 				'accordion-down': {

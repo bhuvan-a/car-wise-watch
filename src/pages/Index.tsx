@@ -1,6 +1,7 @@
 import { OverallHealthGauge } from "@/components/OverallHealthGauge";
 import { VehicleHealthCard } from "@/components/VehicleHealthCard";
 import { MaintenanceAlert } from "@/components/MaintenanceAlert";
+import { Car3D } from "@/components/Car3D";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, Gauge, Settings, Bell } from "lucide-react";
@@ -88,12 +89,13 @@ const Index = () => {
       <div className="container mx-auto px-6 py-8 space-y-8">
         {/* Status Overview */}
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-4">
             <OverallHealthGauge 
               health={mockVehicleData.overallHealth}
               vehicleModel={mockVehicleData.model}
               mileage={mockVehicleData.mileage}
             />
+            <Car3D health={mockVehicleData.overallHealth} />
           </div>
           
           <div className="lg:col-span-2 space-y-6">

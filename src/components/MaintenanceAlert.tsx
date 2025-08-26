@@ -34,11 +34,19 @@ export function MaintenanceAlert({
       const serviceCenter = await findNearestServiceCenter(component);
       
       if (serviceCenter) {
-        toast({
-          title: "Service center found!",
-          description: `Opening directions to ${serviceCenter.name}`,
-        });
-        openGoogleMaps(serviceCenter);
+        const result = await openGoogleMaps(serviceCenter);
+        if (result.success) {
+          toast({
+            title: "Service center found!",
+            description: `Opening directions to ${serviceCenter.name}`,
+          });
+        } else {
+          try { await navigator.clipboard.writeText(result.url); } catch {}
+          toast({
+            title: "Navigation blocked by preview",
+            description: "Maps link copied. Paste it into a new tab to open directions.",
+          });
+        }
       } else {
         toast({
           title: "No service centers found",

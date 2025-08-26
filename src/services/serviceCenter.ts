@@ -99,10 +99,39 @@ export async function findNearestServiceCenter(component: string): Promise<Servi
   }
 }
 
-export function openGoogleMaps(serviceCenter: ServiceCenter) {
-  const destination = encodeURIComponent(serviceCenter.address);
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
-  
-  // Open in new tab/window
-  window.open(googleMapsUrl, '_blank');
+export async function openGoogleMaps(serviceCenter: ServiceCenter): Promise<{ success: boolean; url: string }> {
+  const { lat, lng, address, name } = serviceCenter;
+  const destinationLatLng = `${lat},${lng}`;
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationLatLng)}&travelmode=driving`;
+  const appleMapsUrl = `https://maps.apple.com/?daddr=${encodeURIComponent(destinationLatLng)}&dirflg=d`;
+  const androidGeoUrl = `geo:${destinationLatLng}?q=${encodeURIComponent(destinationLatLng)}(${encodeURIComponent(name)})`;
+  const googleDeepLink = `comgooglemaps://?daddr=${encodeURIComponent(destinationLatLng)}&directionsmode=driving`;
+
+  try {
+    // Try Google Maps web in a new tab first
+    const newWindow = window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
+    if (newWindow && !newWindow.closed) {
+      return { success: true, url: googleMapsUrl };
+    }
+  } catch {}
+
+  try {
+    // Try platform-specific deep links for mobile
+    const ua = navigator.userAgent || '';
+    if (/iPhone|iPad|iPod/i.test(ua)) {
+      window.location.href = appleMapsUrl;
+      return { success: true, url: appleMapsUrl };
+    }
+    if (/Android/i.test(ua)) {
+      window.location.href = googleDeepLink;
+      // If deep link fails, fall back to geo:
+      setTimeout(() => {
+        window.location.href = androidGeoUrl;
+      }, 200);
+      return { success: true, url: googleDeepLink };
+    }
+  } catch {}
+
+  // Fallback: return URL so caller can copy for user
+  return { success: false, url: googleMapsUrl };
 }

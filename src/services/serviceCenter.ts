@@ -99,16 +99,48 @@ export async function findNearestServiceCenter(component: string): Promise<Servi
   }
 }
 
-export async function openGoogleMaps(serviceCenter: ServiceCenter): Promise<{ success: boolean; url: string }> {
+export async function openGoogleMaps(
+  serviceCenter: ServiceCenter,
+  options?: { destinationQuery?: string }
+): Promise<{ success: boolean; url: string }> {
+  // Try to get user's location for accurate origin
+  let originLatLng: string | null = null;
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 300000,
+      });
+    });
+    originLatLng = `${pos.coords.latitude},${pos.coords.longitude}`;
+  } catch {}
+
   const { lat, lng, address, name } = serviceCenter;
-  const destinationLatLng = `${lat},${lng}`;
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinationLatLng)}&travelmode=driving`;
-  const appleMapsUrl = `https://maps.apple.com/?daddr=${encodeURIComponent(destinationLatLng)}&dirflg=d`;
-  const androidGeoUrl = `geo:${destinationLatLng}?q=${encodeURIComponent(destinationLatLng)}(${encodeURIComponent(name)})`;
-  const googleDeepLink = `comgooglemaps://?daddr=${encodeURIComponent(destinationLatLng)}&directionsmode=driving`;
+  const destinationQuery = options?.destinationQuery;
+
+  // Build destination param: prefer query (auto-picks nearest), else precise lat,lng
+  const destinationParam = destinationQuery
+    ? encodeURIComponent(destinationQuery)
+    : encodeURIComponent(`${lat},${lng}`);
+
+  const baseDir = `https://www.google.com/maps/dir/?api=1&destination=${destinationParam}&travelmode=driving`;
+  const googleMapsUrl = originLatLng ? `${baseDir}&origin=${encodeURIComponent(originLatLng)}` : baseDir;
+
+  // Deep links for mobile
+  const googleDeepLink = destinationQuery
+    ? `comgooglemaps://?daddr=${encodeURIComponent(destinationQuery)}&directionsmode=driving${originLatLng ? `&saddr=${encodeURIComponent(originLatLng)}` : ''}`
+    : `comgooglemaps://?daddr=${encodeURIComponent(`${lat},${lng}`)}&directionsmode=driving${originLatLng ? `&saddr=${encodeURIComponent(originLatLng)}` : ''}`;
+
+  const appleMapsUrl = destinationQuery
+    ? `https://maps.apple.com/?daddr=${encodeURIComponent(destinationQuery)}${originLatLng ? `&saddr=${encodeURIComponent(originLatLng)}` : ''}&dirflg=d`
+    : `https://maps.apple.com/?daddr=${encodeURIComponent(`${lat},${lng}`)}${originLatLng ? `&saddr=${encodeURIComponent(originLatLng)}` : ''}&dirflg=d`;
+
+  const androidGeoUrl = destinationQuery
+    ? `geo:0,0?q=${encodeURIComponent(destinationQuery)}`
+    : `geo:${lat},${lng}?q=${encodeURIComponent(name)}`;
 
   try {
-    // Try Google Maps web in a new tab first
     const newWindow = window.open(googleMapsUrl, '_blank', 'noopener,noreferrer');
     if (newWindow && !newWindow.closed) {
       return { success: true, url: googleMapsUrl };
@@ -116,7 +148,6 @@ export async function openGoogleMaps(serviceCenter: ServiceCenter): Promise<{ su
   } catch {}
 
   try {
-    // Try platform-specific deep links for mobile
     const ua = navigator.userAgent || '';
     if (/iPhone|iPad|iPod/i.test(ua)) {
       window.location.href = appleMapsUrl;
@@ -124,7 +155,6 @@ export async function openGoogleMaps(serviceCenter: ServiceCenter): Promise<{ su
     }
     if (/Android/i.test(ua)) {
       window.location.href = googleDeepLink;
-      // If deep link fails, fall back to geo:
       setTimeout(() => {
         window.location.href = androidGeoUrl;
       }, 200);
@@ -132,6 +162,5 @@ export async function openGoogleMaps(serviceCenter: ServiceCenter): Promise<{ su
     }
   } catch {}
 
-  // Fallback: return URL so caller can copy for user
   return { success: false, url: googleMapsUrl };
 }

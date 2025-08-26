@@ -34,11 +34,11 @@ export function MaintenanceAlert({
       const serviceCenter = await findNearestServiceCenter(component);
       
       if (serviceCenter) {
-        const result = await openGoogleMaps(serviceCenter);
+        const result = await openGoogleMaps(serviceCenter, { destinationQuery: `${component} service center` });
         if (result.success) {
           toast({
             title: "Service center found!",
-            description: `Opening directions to ${serviceCenter.name}`,
+            description: `Opening directions to the nearest ${component} service center`,
           });
         } else {
           try { await navigator.clipboard.writeText(result.url); } catch {}

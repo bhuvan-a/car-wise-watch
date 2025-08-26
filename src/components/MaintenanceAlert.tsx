@@ -1,6 +1,9 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Clock, Wrench } from "lucide-react";
+import { AlertTriangle, Clock, Wrench, MapPin } from "lucide-react";
+import { useState } from "react";
+import { findNearestServiceCenter, openGoogleMaps } from "@/services/serviceCenter";
+import { useToast } from "@/hooks/use-toast";
 
 interface MaintenanceAlertProps {
   component: string;
@@ -17,6 +20,42 @@ export function MaintenanceAlert({
   recommendedAction,
   timeframe 
 }: MaintenanceAlertProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleScheduleService = async () => {
+    setIsLoading(true);
+    try {
+      toast({
+        title: "Finding nearest service center...",
+        description: "Please allow location access for best results.",
+      });
+
+      const serviceCenter = await findNearestServiceCenter(component);
+      
+      if (serviceCenter) {
+        toast({
+          title: "Service center found!",
+          description: `Opening directions to ${serviceCenter.name}`,
+        });
+        openGoogleMaps(serviceCenter);
+      } else {
+        toast({
+          title: "No service centers found",
+          description: "Please try again or search manually.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error finding service center",
+        description: "Please try again or search manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const urgencyConfig = {
     low: {
       icon: Clock,
@@ -53,9 +92,20 @@ export function MaintenanceAlert({
             size="sm" 
             variant={config.buttonVariant}
             className="ml-4"
+            onClick={handleScheduleService}
+            disabled={isLoading}
           >
-            <Wrench className="w-4 h-4 mr-2" />
-            Schedule Service
+            {isLoading ? (
+              <>
+                <MapPin className="w-4 h-4 mr-2 animate-pulse" />
+                Finding...
+              </>
+            ) : (
+              <>
+                <Wrench className="w-4 h-4 mr-2" />
+                Schedule Service
+              </>
+            )}
           </Button>
         </div>
       </AlertDescription>

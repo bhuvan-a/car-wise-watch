@@ -95,10 +95,7 @@ const Index = () => {
               vehicleModel={mockVehicleData.model}
               mileage={mockVehicleData.mileage}
             />
-            {/* Temporarily disabled 3D car for debugging */}
-            <Card className="bg-gradient-card p-4 border-border text-center h-48 flex items-center justify-center">
-              <div className="text-muted-foreground">3D Car Model Loading...</div>
-            </Card>
+            <Car3D health={mockVehicleData.overallHealth} />
           </div>
           
           <div className="lg:col-span-2 space-y-6">

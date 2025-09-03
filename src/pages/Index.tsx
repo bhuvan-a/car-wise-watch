@@ -95,7 +95,21 @@ const Index = () => {
               vehicleModel={mockVehicleData.model}
               mileage={mockVehicleData.mileage}
             />
-            <Car3D health={mockVehicleData.overallHealth} />
+            <Car3D 
+              health={mockVehicleData.overallHealth}
+              components={mockVehicleData.components}
+              alerts={mockVehicleData.alerts}
+              onComponentClick={(componentName) => {
+                // Find corresponding alert card and scroll to it
+                const alertElement = document.querySelector(`[data-component="${componentName}"]`);
+                if (alertElement) {
+                  alertElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  // Add highlight effect
+                  alertElement.classList.add('animate-pulse');
+                  setTimeout(() => alertElement.classList.remove('animate-pulse'), 2000);
+                }
+              }}
+            />
           </div>
           
           <div className="lg:col-span-2 space-y-6">
@@ -125,7 +139,9 @@ const Index = () => {
                 Active Alerts
               </h3>
               {mockVehicleData.alerts.map((alert, index) => (
-                <MaintenanceAlert key={index} {...alert} />
+                <div key={index} data-component={alert.component}>
+                  <MaintenanceAlert {...alert} />
+                </div>
               ))}
             </div>
           </div>

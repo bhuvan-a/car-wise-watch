@@ -86,3 +86,27 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Diagnostic panel scan animation */
+  @keyframes scanLine {
+    0% {
+      transform: translateX(-100px);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(calc(100vw + 100px));
+      opacity: 0;
+    }
+  }
+  
+  .animate-scan {
+    animation: scanLine 1s ease-out;
+  }
+}

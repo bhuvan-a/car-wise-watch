@@ -26,71 +26,112 @@ interface CarModelProps {
   onComponentClick: (componentName: string) => void;
 }
 
-// Detailed Car Shell Component
+// Realistic Honda Accord Car Model
 function CarShell() {
   return (
     <group>
-      {/* Main body shell - transparent */}
+      {/* Main Car Body - Dark Gray Solid */}
       <mesh position={[0, 0.6, 0]}>
         <boxGeometry args={[4.2, 1.4, 2]} />
-        <meshPhysicalMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.08} 
-          transmission={0.9}
-          thickness={0.1}
-          roughness={0}
-          envMapIntensity={1}
+        <meshStandardMaterial 
+          color="#2a2a2a"
+          metalness={0.8}
+          roughness={0.2}
         />
       </mesh>
       
-      {/* Hood */}
-      <mesh position={[1.4, 0.8, 0]}>
+      {/* Hood - Slightly Raised */}
+      <mesh position={[1.4, 0.9, 0]}>
         <boxGeometry args={[1.4, 0.2, 1.8]} />
-        <meshPhysicalMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.06} 
-          transmission={0.95}
-          thickness={0.05}
+        <meshStandardMaterial 
+          color="#2a2a2a"
+          metalness={0.8}
+          roughness={0.2}
         />
       </mesh>
       
-      {/* Windshield */}
-      <mesh position={[0.2, 1.4, 0]} rotation={[-0.2, 0, 0]}>
-        <planeGeometry args={[1.8, 1]} />
-        <meshPhysicalMaterial 
-          color="#87CEEB" 
-          transparent 
-          opacity={0.3} 
-          transmission={0.7}
+      {/* Roof */}
+      <mesh position={[0, 1.4, 0]}>
+        <boxGeometry args={[3.8, 0.1, 1.8]} />
+        <meshStandardMaterial 
+          color="#262626"
+          metalness={0.7}
+          roughness={0.3}
         />
       </mesh>
       
-      {/* Doors */}
-      <mesh position={[-0.5, 0.8, 1.05]}>
-        <boxGeometry args={[2, 1, 0.1]} />
+      {/* Front Windshield */}
+      <mesh position={[0.8, 1.4, 0]} rotation={[-0.1, 0, 0]}>
+        <planeGeometry args={[1.6, 1.2]} />
         <meshPhysicalMaterial 
-          color="#ffffff" 
+          color="#1a1a2e"
           transparent 
-          opacity={0.05} 
-          transmission={0.95}
-        />
-      </mesh>
-      <mesh position={[-0.5, 0.8, -1.05]}>
-        <boxGeometry args={[2, 1, 0.1]} />
-        <meshPhysicalMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.05} 
-          transmission={0.95}
+          opacity={0.8}
+          transmission={0.9}
+          thickness={0.02}
         />
       </mesh>
       
-      {/* Wireframe outline for tech aesthetic */}
-      <mesh position={[0, 0.6, 0]}>
-        <boxGeometry args={[4.2, 1.4, 2]} />
-        <meshBasicMaterial color="#00ffff" wireframe transparent opacity={0.1} />
+      {/* Rear Windshield */}
+      <mesh position={[-0.8, 1.4, 0]} rotation={[0.1, 0, 0]}>
+        <planeGeometry args={[1.6, 1.2]} />
+        <meshPhysicalMaterial 
+          color="#1a1a2e"
+          transparent 
+          opacity={0.8}
+          transmission={0.9}
+          thickness={0.02}
+        />
+      </mesh>
+      
+      {/* Side Windows */}
+      <mesh position={[0.2, 1.2, 1.05]} rotation={[0, 0, -0.05]}>
+        <planeGeometry args={[1.8, 0.8]} />
+        <meshPhysicalMaterial 
+          color="#1a1a2e"
+          transparent 
+          opacity={0.8}
+          transmission={0.9}
+        />
+      </mesh>
+      <mesh position={[0.2, 1.2, -1.05]} rotation={[0, 0, 0.05]}>
+        <planeGeometry args={[1.8, 0.8]} />
+        <meshPhysicalMaterial 
+          color="#1a1a2e"
+          transparent 
+          opacity={0.8}
+          transmission={0.9}
+        />
+      </mesh>
+      
+      {/* Front Bumper */}
+      <mesh position={[2.2, 0.3, 0]}>
+        <boxGeometry args={[0.2, 0.4, 1.6]} />
+        <meshStandardMaterial 
+          color="#2a2a2a"
+          metalness={0.8}
+          roughness={0.2}
+        />
+      </mesh>
+      
+      {/* Rear Bumper */}
+      <mesh position={[-2.2, 0.3, 0]}>
+        <boxGeometry args={[0.2, 0.4, 1.6]} />
+        <meshStandardMaterial 
+          color="#2a2a2a"
+          metalness={0.8}
+          roughness={0.2}
+        />
+      </mesh>
+      
+      {/* Front Grille */}
+      <mesh position={[2.15, 0.7, 0]}>
+        <boxGeometry args={[0.05, 0.3, 1.2]} />
+        <meshStandardMaterial 
+          color="#1a1a1a"
+          metalness={0.3}
+          roughness={0.8}
+        />
       </mesh>
     </group>
   );

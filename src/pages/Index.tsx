@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { OverallHealthGauge } from "@/components/OverallHealthGauge";
 import { VehicleHealthCard } from "@/components/VehicleHealthCard";
 import { MaintenanceAlert } from "@/components/MaintenanceAlert";
 import { Car3D } from "@/components/Car3D";
+import { DiagnosticPanel } from "@/components/DiagnosticPanel";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Car, Gauge, Settings, Bell } from "lucide-react";
@@ -60,6 +62,12 @@ const mockVehicleData = {
 };
 
 const Index = () => {
+  const [selectedComponent, setSelectedComponent] = useState<string>();
+
+  const handleAlertClick = (componentName: string) => {
+    setSelectedComponent(componentName);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -88,7 +96,7 @@ const Index = () => {
 
       <div className="container mx-auto px-6 py-8 space-y-8">
         {/* Status Overview */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1 space-y-4">
             <OverallHealthGauge 
               health={mockVehicleData.overallHealth}
@@ -100,6 +108,7 @@ const Index = () => {
               components={mockVehicleData.components}
               alerts={mockVehicleData.alerts}
               onComponentClick={(componentName) => {
+                setSelectedComponent(componentName);
                 // Find corresponding alert card and scroll to it
                 const alertElement = document.querySelector(`[data-component="${componentName}"]`);
                 if (alertElement) {
@@ -110,6 +119,10 @@ const Index = () => {
                 }
               }}
             />
+          </div>
+          
+          <div className="lg:col-span-1">
+            <DiagnosticPanel selectedComponent={selectedComponent} />
           </div>
           
           <div className="lg:col-span-2 space-y-6">
@@ -139,7 +152,12 @@ const Index = () => {
                 Active Alerts
               </h3>
               {mockVehicleData.alerts.map((alert, index) => (
-                <div key={index} data-component={alert.component}>
+                <div 
+                  key={index} 
+                  data-component={alert.component}
+                  onClick={() => handleAlertClick(alert.component)}
+                  className="cursor-pointer"
+                >
                   <MaintenanceAlert {...alert} />
                 </div>
               ))}

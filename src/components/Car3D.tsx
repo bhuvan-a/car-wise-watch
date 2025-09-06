@@ -83,8 +83,11 @@ function DataLines() {
   useFrame((state) => {
     if (linesRef.current) {
       linesRef.current.children.forEach((child, i) => {
-        if (child instanceof THREE.Mesh) {
-          child.material.opacity = 0.3 + Math.sin(state.clock.elapsedTime * 2 + i) * 0.2;
+        if (child instanceof THREE.Mesh && child.material) {
+          const material = child.material as THREE.Material;
+          if ('opacity' in material) {
+            (material as any).opacity = 0.3 + Math.sin(state.clock.elapsedTime * 2 + i) * 0.2;
+          }
         }
       });
     }

@@ -38,40 +38,8 @@ function DigitalGrid() {
 
   return (
     <group ref={gridRef}>
-      {/* Horizontal grid lines */}
-      {Array.from({ length: 20 }, (_, i) => (
-        <line key={`h-${i}`}>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              array={new Float32Array([
-                -10, 0, -10 + i,
-                10, 0, -10 + i
-              ])}
-              count={2}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <lineBasicMaterial color="#00ffff" transparent opacity={0.1} />
-        </line>
-      ))}
-      {/* Vertical grid lines */}
-      {Array.from({ length: 20 }, (_, i) => (
-        <line key={`v-${i}`}>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              array={new Float32Array([
-                -10 + i, 0, -10,
-                -10 + i, 0, 10
-              ])}
-              count={2}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <lineBasicMaterial color="#00ffff" transparent opacity={0.1} />
-        </line>
-      ))}
+      {/* Subtle animated grid using helper to avoid manual buffer attributes */}
+      <gridHelper args={[20, 20, 0x00ffff, 0x00ffff]} />
     </group>
   );
 }

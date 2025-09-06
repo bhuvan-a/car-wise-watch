@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface ComponentData {
@@ -26,20 +26,72 @@ interface CarModelProps {
   onComponentClick: (componentName: string) => void;
 }
 
-// VFX Grid Component
-function DigitalGrid() {
-  const gridRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
-    if (gridRef.current) {
-      gridRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.05;
-    }
-  });
-
+// Detailed Car Shell Component
+function CarShell() {
   return (
-    <group ref={gridRef}>
-      {/* Subtle animated grid using helper to avoid manual buffer attributes */}
-      <gridHelper args={[20, 20, 0x00ffff, 0x00ffff]} />
+    <group>
+      {/* Main body shell - transparent */}
+      <mesh position={[0, 0.6, 0]}>
+        <boxGeometry args={[4.2, 1.4, 2]} />
+        <meshPhysicalMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.08} 
+          transmission={0.9}
+          thickness={0.1}
+          roughness={0}
+          envMapIntensity={1}
+        />
+      </mesh>
+      
+      {/* Hood */}
+      <mesh position={[1.4, 0.8, 0]}>
+        <boxGeometry args={[1.4, 0.2, 1.8]} />
+        <meshPhysicalMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.06} 
+          transmission={0.95}
+          thickness={0.05}
+        />
+      </mesh>
+      
+      {/* Windshield */}
+      <mesh position={[0.2, 1.4, 0]} rotation={[-0.2, 0, 0]}>
+        <planeGeometry args={[1.8, 1]} />
+        <meshPhysicalMaterial 
+          color="#87CEEB" 
+          transparent 
+          opacity={0.3} 
+          transmission={0.7}
+        />
+      </mesh>
+      
+      {/* Doors */}
+      <mesh position={[-0.5, 0.8, 1.05]}>
+        <boxGeometry args={[2, 1, 0.1]} />
+        <meshPhysicalMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.05} 
+          transmission={0.95}
+        />
+      </mesh>
+      <mesh position={[-0.5, 0.8, -1.05]}>
+        <boxGeometry args={[2, 1, 0.1]} />
+        <meshPhysicalMaterial 
+          color="#ffffff" 
+          transparent 
+          opacity={0.05} 
+          transmission={0.95}
+        />
+      </mesh>
+      
+      {/* Wireframe outline for tech aesthetic */}
+      <mesh position={[0, 0.6, 0]}>
+        <boxGeometry args={[4.2, 1.4, 2]} />
+        <meshBasicMaterial color="#00ffff" wireframe transparent opacity={0.1} />
+      </mesh>
     </group>
   );
 }
@@ -157,192 +209,257 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
 
   return (
     <group ref={carRef}>
-      {/* VFX Elements */}
-      <DigitalGrid />
+      {/* Enhanced Car Shell */}
+      <CarShell />
       <DataLines />
       
-      {/* TRANSPARENT CAR SHELL */}
-      {/* Main body - transparent wireframe */}
-      <mesh position={[0, 0.5, 0]}>
-        <boxGeometry args={[4, 1, 1.8]} />
-        <meshPhongMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.1} 
-          wireframe={false}
-          emissive="#001133"
-          emissiveIntensity={0.1}
-        />
+      {/* Realistic Chassis and Undercarriage */}
+      <mesh position={[0, -0.1, 0]}>
+        <boxGeometry args={[3.8, 0.2, 1.6]} />
+        <meshStandardMaterial color="#2a2a2a" metalness={0.8} roughness={0.2} />
       </mesh>
-      
-      {/* Car roof - transparent */}
-      <mesh position={[0, 1.2, 0]}>
-        <boxGeometry args={[2.5, 0.8, 1.6]} />
-        <meshPhongMaterial 
-          color="#ffffff" 
-          transparent 
-          opacity={0.08} 
-          wireframe={false}
-          emissive="#001133"
-          emissiveIntensity={0.1}
-        />
-      </mesh>
-
-      {/* Wireframe outline */}
-      <mesh position={[0, 0.5, 0]}>
-        <boxGeometry args={[4, 1, 1.8]} />
-        <meshBasicMaterial color="#00ffff" wireframe transparent opacity={0.3} />
-      </mesh>
-      <mesh position={[0, 1.2, 0]}>
-        <boxGeometry args={[2.5, 0.8, 1.6]} />
-        <meshBasicMaterial color="#00ffff" wireframe transparent opacity={0.3} />
-      </mesh>
-
-      {/* INTERNAL COMPONENTS - HIGHLY DETAILED */}
-      
-      {/* ENGINE BLOCK - clickable with detailed internal structure */}
+      {/* DETAILED ENGINE BLOCK - More Realistic */}
       <group 
         onPointerOver={(e) => { e.stopPropagation(); setHovered('engine'); }}
         onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
         onClick={(e) => { e.stopPropagation(); handleComponentClick('Engine Oil System'); }}
       >
-        {/* Main engine block */}
-        <mesh position={[1.2, 0.4, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
-          <boxGeometry args={[1.2, 0.8, 1]} />
-          <meshPhongMaterial 
+        {/* V6 Engine Block */}
+        <mesh position={[1.4, 0.4, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
+          <boxGeometry args={[1, 0.6, 0.8]} />
+          <meshStandardMaterial 
             color={engineStatus.color} 
             emissive={engineStatus.emissive}
             emissiveIntensity={engineStatus.intensity}
-            transparent
-            opacity={0.8}
+            metalness={0.7}
+            roughness={0.3}
           />
         </mesh>
-        {/* Engine cylinders */}
-        {Array.from({ length: 4 }, (_, i) => (
-          <mesh key={i} position={[1.2, 0.8, -0.3 + i * 0.2]} scale={hovered === 'engine' ? 1.05 : 1}>
-            <cylinderGeometry args={[0.08, 0.08, 0.4]} />
-            <meshPhongMaterial 
+        
+        {/* Cylinder Head */}
+        <mesh position={[1.4, 0.75, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
+          <boxGeometry args={[0.9, 0.15, 0.7]} />
+          <meshStandardMaterial 
+            color={engineStatus.color}
+            emissive={engineStatus.emissive}
+            emissiveIntensity={engineStatus.intensity * 0.8}
+            metalness={0.8}
+            roughness={0.2}
+          />
+        </mesh>
+        
+        {/* Individual Cylinders */}
+        {Array.from({ length: 6 }, (_, i) => (
+          <mesh key={i} position={[1.4, 0.85, -0.25 + i * 0.1]} scale={hovered === 'engine' ? 1.05 : 1}>
+            <cylinderGeometry args={[0.04, 0.04, 0.3]} />
+            <meshStandardMaterial 
               color={engineStatus.color}
               emissive={engineStatus.emissive}
               emissiveIntensity={engineStatus.intensity * 1.2}
+              metalness={0.9}
             />
           </mesh>
         ))}
-        {/* Oil pump */}
-        <mesh position={[1.5, 0.2, 0.3]} scale={hovered === 'engine' ? 1.05 : 1}>
-          <sphereGeometry args={[0.15]} />
-          <meshPhongMaterial 
+        
+        {/* Oil Pan */}
+        <mesh position={[1.4, 0.1, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
+          <boxGeometry args={[0.8, 0.15, 0.6]} />
+          <meshStandardMaterial 
             color={engineStatus.color}
             emissive={engineStatus.emissive}
             emissiveIntensity={engineStatus.intensity}
+            metalness={0.6}
+            roughness={0.4}
           />
         </mesh>
+        
         {engineStatus.glow && (
           <PulsingLight 
-            position={[1.2, 0.4, 0]} 
+            position={[1.4, 0.4, 0]} 
             color={engineStatus.color} 
-            intensity={engineStatus.intensity}
+            intensity={engineStatus.intensity * 2}
             pulse={engineStatus.pulse}
           />
         )}
       </group>
 
-      {/* AIR INTAKE SYSTEM - clickable */}
+      {/* REALISTIC AIR INTAKE SYSTEM */}
       <group 
         onPointerOver={(e) => { e.stopPropagation(); setHovered('airFilter'); }}
         onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
         onClick={(e) => { e.stopPropagation(); handleComponentClick('Air Filter'); }}
       >
-        {/* Air filter housing */}
-        <mesh position={[0.8, 0.9, 0]} scale={hovered === 'airFilter' ? 1.1 : 1}>
-          <boxGeometry args={[0.4, 0.3, 0.6]} />
-          <meshPhongMaterial 
+        {/* Air Filter Housing - Rectangular Box */}
+        <mesh position={[0.6, 0.8, 0.4]} scale={hovered === 'airFilter' ? 1.1 : 1}>
+          <boxGeometry args={[0.5, 0.2, 0.4]} />
+          <meshStandardMaterial 
             color={airFilterStatus.color}
             emissive={airFilterStatus.emissive}
             emissiveIntensity={airFilterStatus.intensity}
-            transparent
-            opacity={0.9}
+            metalness={0.3}
+            roughness={0.7}
           />
         </mesh>
-        {/* Air intake tubes */}
-        <mesh position={[0.6, 0.8, 0]} rotation={[0, 0, Math.PI / 4]} scale={hovered === 'airFilter' ? 1.1 : 1}>
-          <cylinderGeometry args={[0.05, 0.08, 0.8]} />
-          <meshPhongMaterial 
-            color={airFilterStatus.color}
-            emissive={airFilterStatus.emissive}
-            emissiveIntensity={airFilterStatus.intensity * 0.8}
-          />
-        </mesh>
-        {/* Filter element */}
-        <mesh position={[0.8, 0.9, 0]} scale={hovered === 'airFilter' ? 1.1 : 1}>
-          <cylinderGeometry args={[0.15, 0.15, 0.25]} />
-          <meshPhongMaterial 
+        
+        {/* Air Filter Element (Paper/Cloth) */}
+        <mesh position={[0.6, 0.8, 0.4]} scale={hovered === 'airFilter' ? 1.1 : 1}>
+          <boxGeometry args={[0.4, 0.15, 0.3]} />
+          <meshStandardMaterial 
             color={airFilterStatus.color}
             emissive={airFilterStatus.emissive}
             emissiveIntensity={airFilterStatus.intensity * 1.5}
+            roughness={0.9}
+            metalness={0}
           />
         </mesh>
+        
+        {/* Mass Air Flow Sensor */}
+        <mesh position={[0.4, 0.75, 0.2]} scale={hovered === 'airFilter' ? 1.1 : 1}>
+          <cylinderGeometry args={[0.04, 0.04, 0.15]} />
+          <meshStandardMaterial 
+            color={airFilterStatus.color}
+            emissive={airFilterStatus.emissive}
+            emissiveIntensity={airFilterStatus.intensity}
+            metalness={0.8}
+          />
+        </mesh>
+        
+        {/* Intake Manifold */}
+        <mesh position={[0.9, 0.7, 0]} rotation={[0, 0, Math.PI / 6]} scale={hovered === 'airFilter' ? 1.1 : 1}>
+          <boxGeometry args={[0.4, 0.1, 0.6]} />
+          <meshStandardMaterial 
+            color={airFilterStatus.color}
+            emissive={airFilterStatus.emissive}
+            emissiveIntensity={airFilterStatus.intensity * 0.8}
+            metalness={0.7}
+          />
+        </mesh>
+        
+        {/* Throttle Body */}
+        <mesh position={[1.1, 0.65, 0]} scale={hovered === 'airFilter' ? 1.1 : 1}>
+          <cylinderGeometry args={[0.08, 0.08, 0.12]} />
+          <meshStandardMaterial 
+            color={airFilterStatus.color}
+            emissive={airFilterStatus.emissive}
+            emissiveIntensity={airFilterStatus.intensity}
+            metalness={0.8}
+          />
+        </mesh>
+        
         {airFilterStatus.glow && (
           <PulsingLight 
-            position={[0.8, 0.9, 0]} 
+            position={[0.6, 0.8, 0.4]} 
             color={airFilterStatus.color} 
-            intensity={airFilterStatus.intensity * 2}
+            intensity={airFilterStatus.intensity * 3}
             pulse={airFilterStatus.pulse}
           />
         )}
       </group>
 
-      {/* FUEL SYSTEM - clickable */}
+      {/* REALISTIC FUEL SYSTEM */}
       <group 
         onPointerOver={(e) => { e.stopPropagation(); setHovered('fuelFilter'); }}
         onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
         onClick={(e) => { e.stopPropagation(); handleComponentClick('Fuel Filter'); }}
       >
-        {/* Fuel filter */}
-        <mesh position={[0.2, 0.3, -0.5]} scale={hovered === 'fuelFilter' ? 1.1 : 1}>
-          <cylinderGeometry args={[0.08, 0.08, 0.3]} />
-          <meshPhongMaterial 
+        {/* Fuel Tank */}
+        <mesh position={[-1.5, 0.1, 0]} scale={hovered === 'fuelFilter' ? 1.05 : 1}>
+          <cylinderGeometry args={[0.8, 0.8, 0.3]} />
+          <meshStandardMaterial 
+            color="#444444"
+            metalness={0.6}
+            roughness={0.3}
+          />
+        </mesh>
+        
+        {/* Fuel Filter - Cylindrical */}
+        <mesh position={[0, 0.25, -0.6]} scale={hovered === 'fuelFilter' ? 1.1 : 1}>
+          <cylinderGeometry args={[0.06, 0.06, 0.25]} />
+          <meshStandardMaterial 
             color={fuelFilterStatus.color}
             emissive={fuelFilterStatus.emissive}
             emissiveIntensity={fuelFilterStatus.intensity}
-            transparent
-            opacity={0.9}
+            metalness={0.4}
+            roughness={0.6}
           />
         </mesh>
-        {/* Fuel lines */}
-        {[
-          { pos: [0, 0.3, -0.5], rot: [0, 0, 0] },
-          { pos: [0.4, 0.3, -0.3], rot: [0, Math.PI / 4, 0] },
-          { pos: [0.8, 0.4, 0], rot: [0, Math.PI / 2, 0] }
-        ].map((line, i) => (
-          <mesh 
-            key={i}
-            position={line.pos as [number, number, number]} 
-            rotation={line.rot as [number, number, number]}
-            scale={hovered === 'fuelFilter' ? 1.1 : 1}
-          >
-            <cylinderGeometry args={[0.02, 0.02, 0.4]} />
-            <meshPhongMaterial 
+        
+        {/* Fuel Rail */}
+        <mesh position={[1.2, 0.65, 0]} rotation={[0, Math.PI / 2, 0]} scale={hovered === 'fuelFilter' ? 1.05 : 1}>
+          <cylinderGeometry args={[0.03, 0.03, 0.8]} />
+          <meshStandardMaterial 
+            color={fuelFilterStatus.color}
+            emissive={fuelFilterStatus.emissive}
+            emissiveIntensity={fuelFilterStatus.intensity * 0.8}
+            metalness={0.8}
+          />
+        </mesh>
+        
+        {/* Fuel Injectors */}
+        {Array.from({ length: 6 }, (_, i) => (
+          <mesh key={`injector-${i}`} position={[1.2, 0.5, -0.25 + i * 0.1]} scale={hovered === 'fuelFilter' ? 1.1 : 1}>
+            <cylinderGeometry args={[0.02, 0.02, 0.1]} />
+            <meshStandardMaterial 
               color={fuelFilterStatus.color}
               emissive={fuelFilterStatus.emissive}
-              emissiveIntensity={fuelFilterStatus.intensity * 0.8}
+              emissiveIntensity={fuelFilterStatus.intensity}
+              metalness={0.9}
             />
           </mesh>
         ))}
-        {/* Fuel pump */}
-        <mesh position={[-0.8, 0.1, -0.3]} scale={hovered === 'fuelFilter' ? 1.1 : 1}>
-          <boxGeometry args={[0.2, 0.15, 0.1]} />
-          <meshPhongMaterial 
+        
+        {/* Fuel Lines */}
+        {[
+          { from: [-1.5, 0.1, 0], to: [0, 0.25, -0.6] },
+          { from: [0, 0.25, -0.6], to: [1.2, 0.65, 0] }
+        ].map((line, i) => {
+          const distance = Math.sqrt(
+            Math.pow(line.to[0] - line.from[0], 2) +
+            Math.pow(line.to[1] - line.from[1], 2) +
+            Math.pow(line.to[2] - line.from[2], 2)
+          );
+          return (
+            <mesh 
+              key={`fuel-line-${i}`}
+              position={[
+                (line.from[0] + line.to[0]) / 2,
+                (line.from[1] + line.to[1]) / 2,
+                (line.from[2] + line.to[2]) / 2
+              ]}
+              rotation={[
+                0, 
+                Math.atan2(line.to[2] - line.from[2], line.to[0] - line.from[0]), 
+                Math.atan2(line.to[1] - line.from[1], Math.sqrt(Math.pow(line.to[0] - line.from[0], 2) + Math.pow(line.to[2] - line.from[2], 2)))
+              ]}
+              scale={hovered === 'fuelFilter' ? 1.05 : 1}
+            >
+              <cylinderGeometry args={[0.015, 0.015, distance]} />
+              <meshStandardMaterial 
+                color={fuelFilterStatus.color}
+                emissive={fuelFilterStatus.emissive}
+                emissiveIntensity={fuelFilterStatus.intensity * 0.6}
+                metalness={0.7}
+              />
+            </mesh>
+          );
+        })}
+        
+        {/* Fuel Pump */}
+        <mesh position={[-1.3, 0.1, 0.2]} scale={hovered === 'fuelFilter' ? 1.1 : 1}>
+          <boxGeometry args={[0.15, 0.1, 0.08]} />
+          <meshStandardMaterial 
             color={fuelFilterStatus.color}
             emissive={fuelFilterStatus.emissive}
             emissiveIntensity={fuelFilterStatus.intensity}
+            metalness={0.8}
           />
         </mesh>
+        
         {fuelFilterStatus.glow && (
           <PulsingLight 
-            position={[0.2, 0.3, -0.5]} 
+            position={[0, 0.25, -0.6]} 
             color={fuelFilterStatus.color} 
-            intensity={fuelFilterStatus.intensity * 1.5}
+            intensity={fuelFilterStatus.intensity * 2}
             pulse={fuelFilterStatus.pulse}
           />
         )}
@@ -426,46 +543,86 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
         )}
       </group>
 
-      {/* WHEELS - transparent with subtle glow */}
+      {/* REALISTIC WHEELS AND TIRES */}
       {[
-        [1.5, -0.2, 1],
-        [1.5, -0.2, -1],
-        [-1.5, -0.2, 1],
-        [-1.5, -0.2, -1]
+        [1.6, -0.3, 1.1],
+        [1.6, -0.3, -1.1],
+        [-1.6, -0.3, 1.1],
+        [-1.6, -0.3, -1.1]
       ].map((position, index) => (
-        <mesh 
-          key={`wheel-${index}`}
-          position={position as [number, number, number]} 
-          rotation={[Math.PI / 2, 0, 0]}
-        >
-          <cylinderGeometry args={[0.4, 0.4, 0.25]} />
-          <meshPhongMaterial 
-            color="#1a1a1a" 
-            transparent 
-            opacity={0.6}
-            emissive="#001111"
-            emissiveIntensity={0.1}
-          />
-        </mesh>
+        <group key={`wheel-group-${index}`}>
+          {/* Tire */}
+          <mesh 
+            position={position as [number, number, number]} 
+            rotation={[Math.PI / 2, 0, 0]}
+          >
+            <torusGeometry args={[0.35, 0.08]} />
+            <meshStandardMaterial 
+              color="#1a1a1a" 
+              roughness={0.9}
+              metalness={0}
+            />
+          </mesh>
+          
+          {/* Rim */}
+          <mesh 
+            position={position as [number, number, number]} 
+            rotation={[Math.PI / 2, 0, 0]}
+          >
+            <cylinderGeometry args={[0.28, 0.28, 0.12]} />
+            <meshStandardMaterial 
+              color="#c0c0c0" 
+              metalness={0.8}
+              roughness={0.1}
+            />
+          </mesh>
+          
+          {/* Brake Components visible through rim */}
+          <mesh 
+            position={position as [number, number, number]} 
+            rotation={[Math.PI / 2, 0, 0]}
+          >
+            <cylinderGeometry args={[0.22, 0.22, 0.02]} />
+            <meshStandardMaterial 
+              color={brakeStatus.color}
+              emissive={brakeStatus.emissive}
+              emissiveIntensity={brakeStatus.intensity}
+              metalness={0.7}
+              roughness={0.3}
+            />
+          </mesh>
+        </group>
       ))}
       
-      {/* Headlights with sci-fi glow */}
-      <mesh position={[2.1, 0.8, 0.6]}>
-        <sphereGeometry args={[0.15]} />
-        <meshPhongMaterial color="#ffffff" emissive="#aaffff" emissiveIntensity={0.8} transparent opacity={0.9} />
+      {/* Enhanced Headlights */}
+      <mesh position={[2.2, 0.7, 0.6]}>
+        <sphereGeometry args={[0.12]} />
+        <meshPhysicalMaterial 
+          color="#ffffff" 
+          emissive="#e6f3ff" 
+          emissiveIntensity={1.2} 
+          transmission={0.8}
+          thickness={0.1}
+        />
       </mesh>
-      <mesh position={[2.1, 0.8, -0.6]}>
-        <sphereGeometry args={[0.15]} />
-        <meshPhongMaterial color="#ffffff" emissive="#aaffff" emissiveIntensity={0.8} transparent opacity={0.9} />
+      <mesh position={[2.2, 0.7, -0.6]}>
+        <sphereGeometry args={[0.12]} />
+        <meshPhysicalMaterial 
+          color="#ffffff" 
+          emissive="#e6f3ff" 
+          emissiveIntensity={1.2}
+          transmission={0.8}
+          thickness={0.1}
+        />
       </mesh>
       
-      {/* Digital HUD elements */}
-      <mesh position={[0, 2, 0]} rotation={[-Math.PI / 6, 0, 0]}>
-        <planeGeometry args={[2, 0.5]} />
+      {/* Digital HUD/Dashboard */}
+      <mesh position={[0.8, 1.0, 0]} rotation={[-Math.PI / 8, 0, 0]}>
+        <planeGeometry args={[1.5, 0.3]} />
         <meshBasicMaterial 
           color="#00ffff" 
           transparent 
-          opacity={0.3}
+          opacity={0.4}
         />
       </mesh>
     </group>
@@ -491,16 +648,21 @@ export function Car3D({ health, components, alerts, onComponentClick }: Car3DPro
         PREDICTIVE ANALYSIS ACTIVE
       </div>
       
-      <Canvas camera={{ position: [6, 4, 6], fov: 45 }}>
-        {/* Enhanced studio lighting for X-ray effect */}
-        <ambientLight intensity={0.3} color="#001133" />
-        <pointLight position={[10, 10, 10]} intensity={0.8} color="#ffffff" />
-        <pointLight position={[-10, 5, -10]} intensity={0.4} color="#0088ff" />
-        <directionalLight position={[5, 8, 5]} intensity={0.6} color="#aaffff" />
+      <Canvas camera={{ position: [8, 6, 8], fov: 40 }}>
+        {/* Enhanced X-ray lighting setup */}
+        <ambientLight intensity={0.4} color="#ffffff" />
+        <directionalLight position={[10, 10, 5]} intensity={1.2} color="#ffffff" castShadow />
+        <directionalLight position={[-5, 8, -5]} intensity={0.8} color="#e6f3ff" />
         
-        {/* Rim lighting for sci-fi effect */}
-        <pointLight position={[0, 10, 0]} intensity={0.3} color="#00ffff" />
-        <pointLight position={[0, -5, 0]} intensity={0.2} color="#ff4400" />
+        {/* Rim lighting for transparent materials */}
+        <pointLight position={[5, 5, 10]} intensity={0.6} color="#ffffff" />
+        <pointLight position={[-5, 5, -10]} intensity={0.6} color="#ffffff" />
+        
+        {/* Bottom lighting to illuminate undercarriage */}
+        <pointLight position={[0, -3, 0]} intensity={0.4} color="#0088ff" />
+        
+        {/* Environment lighting for metallic surfaces */}
+        <hemisphereLight args={["#ffffff", "#404040"]} intensity={0.3} />
         
         <CarModel 
           health={health} 
@@ -511,12 +673,12 @@ export function Car3D({ health, components, alerts, onComponentClick }: Car3DPro
         <OrbitControls 
           enablePan={false} 
           enableZoom={true}
-          minDistance={4}
-          maxDistance={10}
+          minDistance={5}
+          maxDistance={15}
           autoRotate
-          autoRotateSpeed={0.5}
-          minPolarAngle={Math.PI / 6}
-          maxPolarAngle={Math.PI / 1.5}
+          autoRotateSpeed={0.3}
+          minPolarAngle={Math.PI / 8}
+          maxPolarAngle={Math.PI / 1.3}
         />
       </Canvas>
     </div>

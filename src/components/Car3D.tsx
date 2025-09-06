@@ -209,7 +209,7 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
 
   return (
     <group ref={carRef}>
-      {/* Enhanced Car Shell */}
+      {/* Enhanced Car Shell - Digital Twin */}
       <CarShell />
       <DataLines />
       

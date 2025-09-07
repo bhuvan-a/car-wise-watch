@@ -82,7 +82,7 @@ function EngineModel({ modelPath, onComponentHighlight }: {
 }
 
 // Preload the GLTF model
-useGLTF.preload('/models/engine-v6.gltf');
+useGLTF.preload('/models/engine-v6.glb');
 
 function CarModel({ health, components, alerts, onComponentClick }: CarModelProps) {
   const [highlightedComponent, setHighlightedComponent] = useState<string | null>(null);
@@ -97,7 +97,7 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
   return (
     <group>
       <EngineModel 
-        modelPath="/models/engine-v6.gltf" 
+        modelPath="/models/engine-v6.glb" 
         onComponentHighlight={handleComponentHighlight}
       />
       {highlightedComponent && (

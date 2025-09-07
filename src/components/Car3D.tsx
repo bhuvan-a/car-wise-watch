@@ -27,23 +27,38 @@ interface CarModelProps {
   onComponentClick: (componentName: string) => void;
 }
 
-// 3D Model Viewer Component
+// 3D Model Viewer Component with Error Handling
 function EngineModel({ modelPath, onComponentHighlight }: { 
   modelPath: string; 
   onComponentHighlight: (componentName: string | null) => void;
 }) {
-  const { scene } = useGLTF(modelPath);
+  console.log('EngineModel: Attempting to load model from:', modelPath);
+  
+  let scene;
+  let error;
+  
+  try {
+    const gltf = useGLTF(modelPath);
+    scene = gltf.scene;
+    console.log('EngineModel: Successfully loaded scene:', scene);
+  } catch (e) {
+    console.error('EngineModel: Failed to load model:', e);
+    error = e;
+  }
+  
   const [highlightedPart, setHighlightedPart] = useState<THREE.Object3D | null>(null);
   const modelRef = useRef<THREE.Group>(null);
 
   useEffect(() => {
     if (scene) {
+      console.log('EngineModel: Scene available, searching for components...');
       // Search for air filter or intake components
       const findAirFilterComponent = (object: THREE.Object3D): THREE.Object3D | null => {
         if (object.name.toLowerCase().includes('air_filter') || 
             object.name.toLowerCase().includes('intake') ||
             object.name.toLowerCase().includes('filter') ||
             object.name.toLowerCase().includes('air')) {
+          console.log('EngineModel: Found air filter component:', object.name);
           return object;
         }
         
@@ -58,9 +73,13 @@ function EngineModel({ modelPath, onComponentHighlight }: {
       if (airFilterPart) {
         setHighlightedPart(airFilterPart);
         onComponentHighlight(airFilterPart.name || 'Air Filter');
+      } else {
+        console.log('EngineModel: No air filter component found');
       }
+    } else if (error) {
+      console.log('EngineModel: No scene due to error, showing fallback');
     }
-  }, [scene, onComponentHighlight]);
+  }, [scene, onComponentHighlight, error]);
 
   // Pulsing red highlight effect
   useFrame((state) => {
@@ -74,6 +93,46 @@ function EngineModel({ modelPath, onComponentHighlight }: {
     }
   });
 
+  // If model failed to load, show a fallback geometric engine
+  if (error || !scene) {
+    console.log('EngineModel: Rendering fallback geometric engine');
+    return (
+      <group ref={modelRef} position={[0, 0, 0]} scale={1}>
+        {/* Engine Block */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[2, 1.2, 1.5]} />
+          <meshStandardMaterial color="#444444" metalness={0.8} roughness={0.2} />
+        </mesh>
+        
+        {/* Air Filter - Highlighted in Red */}
+        <mesh position={[1.5, 0.5, 0]} onClick={() => onComponentHighlight('Air Filter')}>
+          <boxGeometry args={[0.6, 0.4, 0.8]} />
+          <meshStandardMaterial 
+            color="#ff0000" 
+            emissive="#ff0000" 
+            emissiveIntensity={0.3}
+            metalness={0.3} 
+            roughness={0.7} 
+          />
+        </mesh>
+        
+        {/* Cylinders */}
+        {Array.from({ length: 6 }, (_, i) => (
+          <mesh key={i} position={[-0.6 + (i % 3) * 0.6, 0.8, -0.3 + Math.floor(i / 3) * 0.6]}>
+            <cylinderGeometry args={[0.1, 0.1, 0.4]} />
+            <meshStandardMaterial color="#666666" metalness={0.9} />
+          </mesh>
+        ))}
+        
+        {/* Intake Manifold */}
+        <mesh position={[0.8, 0.3, 0]}>
+          <boxGeometry args={[0.8, 0.2, 1.2]} />
+          <meshStandardMaterial color="#555555" metalness={0.7} />
+        </mesh>
+      </group>
+    );
+  }
+
   return (
     <group ref={modelRef}>
       <primitive object={scene} scale={2} position={[0, -1, 0]} />
@@ -81,8 +140,8 @@ function EngineModel({ modelPath, onComponentHighlight }: {
   );
 }
 
-// Preload the GLTF model
-useGLTF.preload('/models/engine-v6.glb');
+// Remove problematic preload to prevent caching issues
+// useGLTF.preload('/models/engine-v6.glb');
 
 function CarModel({ health, components, alerts, onComponentClick }: CarModelProps) {
   const [highlightedComponent, setHighlightedComponent] = useState<string | null>(null);

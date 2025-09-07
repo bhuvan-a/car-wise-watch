@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
@@ -94,43 +94,8 @@ function EngineModel({ modelPath, onComponentHighlight }: {
   });
 
   // If model failed to load, show a fallback geometric engine
-  if (error || !scene) {
-    console.log('EngineModel: Rendering fallback geometric engine');
-    return (
-      <group ref={modelRef} position={[0, 0, 0]} scale={1}>
-        {/* Engine Block */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[2, 1.2, 1.5]} />
-          <meshStandardMaterial color="#444444" metalness={0.8} roughness={0.2} />
-        </mesh>
-        
-        {/* Air Filter - Highlighted in Red */}
-        <mesh position={[1.5, 0.5, 0]} onClick={() => onComponentHighlight('Air Filter')}>
-          <boxGeometry args={[0.6, 0.4, 0.8]} />
-          <meshStandardMaterial 
-            color="#ff0000" 
-            emissive="#ff0000" 
-            emissiveIntensity={0.3}
-            metalness={0.3} 
-            roughness={0.7} 
-          />
-        </mesh>
-        
-        {/* Cylinders */}
-        {Array.from({ length: 6 }, (_, i) => (
-          <mesh key={i} position={[-0.6 + (i % 3) * 0.6, 0.8, -0.3 + Math.floor(i / 3) * 0.6]}>
-            <cylinderGeometry args={[0.1, 0.1, 0.4]} />
-            <meshStandardMaterial color="#666666" metalness={0.9} />
-          </mesh>
-        ))}
-        
-        {/* Intake Manifold */}
-        <mesh position={[0.8, 0.3, 0]}>
-          <boxGeometry args={[0.8, 0.2, 1.2]} />
-          <meshStandardMaterial color="#555555" metalness={0.7} />
-        </mesh>
-      </group>
-    );
+  if (!scene) {
+    return null; // Will be handled by Suspense fallback
   }
 
   return (
@@ -140,8 +105,21 @@ function EngineModel({ modelPath, onComponentHighlight }: {
   );
 }
 
-// Remove problematic preload to prevent caching issues
-// useGLTF.preload('/models/engine-v6.glb');
+// Simple fallback geometric engine while model loads
+function FallbackEngine({ onComponentHighlight }: { onComponentHighlight: (name: string) => void }) {
+  return (
+    <group position={[0, 0, 0]} scale={1}>
+      <mesh position={[0, 0, 0]}>
+        <boxGeometry args={[2, 1.2, 1.5]} />
+        <meshStandardMaterial color="#444444" metalness={0.8} roughness={0.2} />
+      </mesh>
+      <mesh position={[1.5, 0.5, 0]} onClick={() => onComponentHighlight('Air Filter')}>
+        <boxGeometry args={[0.6, 0.4, 0.8]} />
+        <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.3} metalness={0.3} roughness={0.7} />
+      </mesh>
+    </group>
+  );
+}
 
 function CarModel({ health, components, alerts, onComponentClick }: CarModelProps) {
   const [highlightedComponent, setHighlightedComponent] = useState<string | null>(null);
@@ -192,7 +170,7 @@ export function Car3D({ health, components, alerts, onComponentClick }: Car3DPro
 
   return (
     <div className="flex flex-col lg:flex-row h-full gap-4">
-      <div className="flex-1 bg-transparent rounded-xl overflow-hidden relative">
+      <div className="flex-1 h-80 md:h-96 bg-transparent rounded-xl overflow-hidden relative">
         <div className="absolute top-4 left-4 z-10">
           <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 border border-cyan-500/30">
             <p className="text-cyan-400 text-sm font-medium">3D Engine Viewer</p>
@@ -204,8 +182,9 @@ export function Car3D({ health, components, alerts, onComponentClick }: Car3DPro
         
         <Canvas 
           camera={{ position: [3, 2, 5], fov: 75 }}
-          gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true }}
-          style={{ background: 'transparent' }}
+          gl={{ alpha: true, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' }}
+          className="w-full h-full"
+          style={{ background: 'transparent', height: '100%' }}
         >
           <ambientLight intensity={0.6} />
           <directionalLight 
@@ -214,12 +193,14 @@ export function Car3D({ health, components, alerts, onComponentClick }: Car3DPro
             castShadow 
           />
           <pointLight position={[-5, 5, -5]} intensity={0.8} />
-          <CarModel 
-            health={health} 
-            components={components} 
-            alerts={alerts}
-            onComponentClick={handleComponentClick}
-          />
+          <Suspense fallback={<FallbackEngine onComponentHighlight={handleComponentClick} />}>
+            <CarModel 
+              health={health} 
+              components={components} 
+              alerts={alerts}
+              onComponentClick={handleComponentClick}
+            />
+          </Suspense>
           <OrbitControls 
             enablePan={true} 
             enableZoom={true} 

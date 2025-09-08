@@ -261,19 +261,27 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
       </mesh>
       {/* REALISTIC V8 ENGINE - High Detail Digital Twin */}
       <group 
-        onPointerOver={(e) => { e.stopPropagation(); setHovered('engine'); }}
+        onPointerOver={(e) => { 
+          e.stopPropagation(); 
+          setHovered('engine'); 
+          console.log('V8 Engine hovered - NEW MODEL LOADED');
+        }}
         onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
-        onClick={(e) => { e.stopPropagation(); handleComponentClick('Engine Oil System'); }}
+        onClick={(e) => { 
+          e.stopPropagation(); 
+          handleComponentClick('Engine Oil System'); 
+          console.log('V8 Engine clicked - This is the new detailed engine!');
+        }}
         position={[1.4, 0.4, 0]}
-        scale={hovered === 'engine' ? 1.08 : 1}
+        scale={hovered === 'engine' ? 1.15 : 1}
       >
-        {/* Main V8 Engine Block - Cast Iron Look */}
+        {/* Main V8 Engine Block - Cast Iron Look - MUCH LARGER AND MORE VISIBLE */}
         <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[1.2, 0.8, 1]} />
+          <boxGeometry args={[1.5, 1, 1.2]} />
           <meshStandardMaterial 
-            color={engineStatus.color}
-            emissive={engineStatus.emissive}
-            emissiveIntensity={engineStatus.intensity}
+            color="#ff6600"  // Bright orange to make it super visible
+            emissive="#ff3300"
+            emissiveIntensity={0.5}
             metalness={0.8}
             roughness={0.4}
           />

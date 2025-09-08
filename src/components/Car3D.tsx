@@ -293,38 +293,56 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
         </mesh>
         
         {/* Air Intake Manifold - Top Center */}
-        <mesh position={[0, 1.2, 0]}>
+        <mesh 
+          position={[0, 1.2, 0]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('intake'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Air Intake System'); }}
+          scale={hovered === 'intake' ? 1.1 : 1}
+        >
           <boxGeometry args={[1.2, 0.4, 0.8]} />
           <meshStandardMaterial 
-            color="#333333"
+            color={hovered === 'intake' ? "#0099ff" : "#333333"}
             emissive={airFilterStatus.emissive}
-            emissiveIntensity={airFilterStatus.intensity}
+            emissiveIntensity={hovered === 'intake' ? 0.4 : airFilterStatus.intensity}
             metalness={0.6}
             roughness={0.5}
           />
         </mesh>
         
         {/* Large Air Filter Housing - Like in reference */}
-        <mesh position={[0, 1.5, 0.3]}>
+        <mesh 
+          position={[0, 1.5, 0.3]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('airFilter'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Air Filter'); }}
+          scale={hovered === 'airFilter' ? 1.15 : 1}
+        >
           <cylinderGeometry args={[0.3, 0.3, 0.4]} />
           <meshStandardMaterial 
-            color="#1a1a1a"
+            color={hovered === 'airFilter' ? "#00ff66" : "#1a1a1a"}
             emissive={airFilterStatus.emissive}
-            emissiveIntensity={airFilterStatus.intensity}
+            emissiveIntensity={hovered === 'airFilter' ? 0.5 : airFilterStatus.intensity}
             metalness={0.3}
             roughness={0.8}
           />
         </mesh>
         
         {/* Turbocharger Assembly - Right Side */}
-        <group position={[1.2, 0.4, 0]}>
+        <group 
+          position={[1.2, 0.4, 0]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('turbo'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Turbocharger'); }}
+          scale={hovered === 'turbo' ? 1.2 : 1}
+        >
           {/* Turbine Housing */}
           <mesh position={[0, 0, 0]}>
             <sphereGeometry args={[0.25]} />
             <meshStandardMaterial 
-              color="#aa4400"
-              emissive="#cc3300"
-              emissiveIntensity={0.3}
+              color={hovered === 'turbo' ? "#ff6600" : "#aa4400"}
+              emissive={hovered === 'turbo' ? "#ff3300" : "#cc3300"}
+              emissiveIntensity={hovered === 'turbo' ? 0.6 : 0.3}
               metalness={0.8}
               roughness={0.2}
             />
@@ -333,7 +351,9 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
           <mesh position={[0.3, 0, 0]}>
             <sphereGeometry args={[0.22]} />
             <meshStandardMaterial 
-              color="#666666"
+              color={hovered === 'turbo' ? "#999999" : "#666666"}
+              emissive={hovered === 'turbo' ? "#0066ff" : "#000000"}
+              emissiveIntensity={hovered === 'turbo' ? 0.3 : 0}
               metalness={0.8}
               roughness={0.3}
             />
@@ -355,10 +375,18 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
         ))}
         
         {/* Intercooler - Front */}
-        <mesh position={[1, 0, 0]}>
+        <mesh 
+          position={[1, 0, 0]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('intercooler'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Intercooler System'); }}
+          scale={hovered === 'intercooler' ? 1.1 : 1}
+        >
           <boxGeometry args={[0.2, 0.6, 1]} />
           <meshStandardMaterial 
-            color="#888888"
+            color={hovered === 'intercooler' ? "#66ccff" : "#888888"}
+            emissive={hovered === 'intercooler' ? "#0099cc" : "#000000"}
+            emissiveIntensity={hovered === 'intercooler' ? 0.3 : 0}
             metalness={0.8}
             roughness={0.2}
           />
@@ -386,12 +414,18 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
         </mesh>
         
         {/* Oil Pan - Bottom */}
-        <mesh position={[0, -0.7, 0]}>
+        <mesh 
+          position={[0, -0.7, 0]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('oilPan'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Engine Oil System'); }}
+          scale={hovered === 'oilPan' ? 1.1 : 1}
+        >
           <boxGeometry args={[1.8, 0.2, 1.2]} />
           <meshStandardMaterial 
-            color="#1a1a1a"
-            emissive={engineStatus.emissive}
-            emissiveIntensity={engineStatus.intensity}
+            color={hovered === 'oilPan' ? "#ff3366" : "#1a1a1a"}
+            emissive={hovered === 'oilPan' ? "#cc0033" : engineStatus.emissive}
+            emissiveIntensity={hovered === 'oilPan' ? 0.5 : engineStatus.intensity}
             metalness={0.6}
             roughness={0.6}
           />
@@ -408,20 +442,36 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
         </mesh>
         
         {/* Alternator */}
-        <mesh position={[0.6, -0.2, -0.5]}>
+        <mesh 
+          position={[0.6, -0.2, -0.5]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('alternator'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Alternator'); }}
+          scale={hovered === 'alternator' ? 1.2 : 1}
+        >
           <cylinderGeometry args={[0.12, 0.12, 0.2]} />
           <meshStandardMaterial 
-            color="#2a2a2a"
+            color={hovered === 'alternator' ? "#ffaa00" : "#2a2a2a"}
+            emissive={hovered === 'alternator' ? "#ff6600" : "#000000"}
+            emissiveIntensity={hovered === 'alternator' ? 0.4 : 0}
             metalness={0.4}
             roughness={0.7}
           />
         </mesh>
         
         {/* Starter Motor */}
-        <mesh position={[-0.5, -0.3, -0.4]}>
+        <mesh 
+          position={[-0.5, -0.3, -0.4]}
+          onPointerOver={(e) => { e.stopPropagation(); setHovered('starter'); }}
+          onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
+          onClick={(e) => { e.stopPropagation(); handleComponentClick('Starter Motor'); }}
+          scale={hovered === 'starter' ? 1.2 : 1}
+        >
           <cylinderGeometry args={[0.1, 0.1, 0.25]} />
           <meshStandardMaterial 
-            color="#333333"
+            color={hovered === 'starter' ? "#00ffcc" : "#333333"}
+            emissive={hovered === 'starter' ? "#0099aa" : "#000000"}
+            emissiveIntensity={hovered === 'starter' ? 0.4 : 0}
             metalness={0.5}
             roughness={0.6}
           />

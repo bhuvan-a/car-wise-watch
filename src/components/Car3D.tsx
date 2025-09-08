@@ -259,68 +259,227 @@ function CarModel({ health, components, alerts, onComponentClick }: CarModelProp
         <boxGeometry args={[3.8, 0.2, 1.6]} />
         <meshStandardMaterial color="#2a2a2a" metalness={0.8} roughness={0.2} />
       </mesh>
-      {/* DETAILED ENGINE BLOCK - More Realistic */}
+      {/* REALISTIC V8 ENGINE - High Detail Digital Twin */}
       <group 
         onPointerOver={(e) => { e.stopPropagation(); setHovered('engine'); }}
         onPointerOut={(e) => { e.stopPropagation(); setHovered(null); }}
         onClick={(e) => { e.stopPropagation(); handleComponentClick('Engine Oil System'); }}
+        position={[1.4, 0.4, 0]}
+        scale={hovered === 'engine' ? 1.08 : 1}
       >
-        {/* V6 Engine Block */}
-        <mesh position={[1.4, 0.4, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
-          <boxGeometry args={[1, 0.6, 0.8]} />
+        {/* Main V8 Engine Block - Cast Iron Look */}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[1.2, 0.8, 1]} />
           <meshStandardMaterial 
-            color={engineStatus.color} 
+            color={engineStatus.color}
             emissive={engineStatus.emissive}
             emissiveIntensity={engineStatus.intensity}
-            metalness={0.7}
+            metalness={0.8}
+            roughness={0.4}
+          />
+        </mesh>
+        
+        {/* Left Bank Cylinder Head - V8 Configuration */}
+        <mesh position={[-0.25, 0.5, 0.15]} rotation={[0, 0, -0.3]}>
+          <boxGeometry args={[1, 0.2, 0.3]} />
+          <meshStandardMaterial 
+            color={engineStatus.color}
+            emissive={engineStatus.emissive}
+            emissiveIntensity={engineStatus.intensity * 0.9}
+            metalness={0.85}
             roughness={0.3}
           />
         </mesh>
         
-        {/* Cylinder Head */}
-        <mesh position={[1.4, 0.75, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
-          <boxGeometry args={[0.9, 0.15, 0.7]} />
+        {/* Right Bank Cylinder Head - V8 Configuration */}
+        <mesh position={[-0.25, 0.5, -0.15]} rotation={[0, 0, 0.3]}>
+          <boxGeometry args={[1, 0.2, 0.3]} />
           <meshStandardMaterial 
             color={engineStatus.color}
             emissive={engineStatus.emissive}
-            emissiveIntensity={engineStatus.intensity * 0.8}
-            metalness={0.8}
+            emissiveIntensity={engineStatus.intensity * 0.9}
+            metalness={0.85}
+            roughness={0.3}
+          />
+        </mesh>
+        
+        {/* Individual Cylinders - Left Bank (4 cylinders) */}
+        {Array.from({ length: 4 }, (_, i) => (
+          <group key={`left-cyl-${i}`}>
+            <mesh position={[-0.4 + i * 0.2, 0.65, 0.25]} rotation={[0, 0, -0.3]}>
+              <cylinderGeometry args={[0.045, 0.045, 0.35]} />
+              <meshStandardMaterial 
+                color={engineStatus.color}
+                emissive={engineStatus.emissive}
+                emissiveIntensity={engineStatus.intensity * 1.3}
+                metalness={0.9}
+                roughness={0.2}
+              />
+            </mesh>
+            {/* Spark Plug */}
+            <mesh position={[-0.4 + i * 0.2, 0.85, 0.35]} rotation={[0, 0, -0.3]}>
+              <cylinderGeometry args={[0.02, 0.02, 0.1]} />
+              <meshStandardMaterial 
+                color="#ffffff"
+                emissive="#004488"
+                emissiveIntensity={0.3}
+                metalness={0.1}
+              />
+            </mesh>
+          </group>
+        ))}
+        
+        {/* Individual Cylinders - Right Bank (4 cylinders) */}
+        {Array.from({ length: 4 }, (_, i) => (
+          <group key={`right-cyl-${i}`}>
+            <mesh position={[-0.4 + i * 0.2, 0.65, -0.25]} rotation={[0, 0, 0.3]}>
+              <cylinderGeometry args={[0.045, 0.045, 0.35]} />
+              <meshStandardMaterial 
+                color={engineStatus.color}
+                emissive={engineStatus.emissive}
+                emissiveIntensity={engineStatus.intensity * 1.3}
+                metalness={0.9}
+                roughness={0.2}
+              />
+            </mesh>
+            {/* Spark Plug */}
+            <mesh position={[-0.4 + i * 0.2, 0.85, -0.35]} rotation={[0, 0, 0.3]}>
+              <cylinderGeometry args={[0.02, 0.02, 0.1]} />
+              <meshStandardMaterial 
+                color="#ffffff"
+                emissive="#004488"
+                emissiveIntensity={0.3}
+                metalness={0.1}
+              />
+            </mesh>
+          </group>
+        ))}
+        
+        {/* Crankshaft - Visible through oil pan cutout */}
+        <mesh position={[0, -0.3, 0]} rotation={[0, Math.PI / 2, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.9]} />
+          <meshStandardMaterial 
+            color="#444444"
+            emissive={engineStatus.emissive}
+            emissiveIntensity={engineStatus.intensity * 0.7}
+            metalness={0.9}
             roughness={0.2}
           />
         </mesh>
         
-        {/* Individual Cylinders */}
-        {Array.from({ length: 6 }, (_, i) => (
-          <mesh key={i} position={[1.4, 0.85, -0.25 + i * 0.1]} scale={hovered === 'engine' ? 1.05 : 1}>
-            <cylinderGeometry args={[0.04, 0.04, 0.3]} />
+        {/* Connecting Rods - Multiple visible */}
+        {Array.from({ length: 4 }, (_, i) => (
+          <mesh key={`rod-${i}`} position={[-0.3 + i * 0.2, -0.15, 0]} rotation={[0.2, 0, 0]}>
+            <cylinderGeometry args={[0.025, 0.025, 0.25]} />
             <meshStandardMaterial 
-              color={engineStatus.color}
+              color="#666666"
               emissive={engineStatus.emissive}
-              emissiveIntensity={engineStatus.intensity * 1.2}
-              metalness={0.9}
+              emissiveIntensity={engineStatus.intensity * 0.5}
+              metalness={0.8}
             />
           </mesh>
         ))}
         
-        {/* Oil Pan */}
-        <mesh position={[1.4, 0.1, 0]} scale={hovered === 'engine' ? 1.05 : 1}>
-          <boxGeometry args={[0.8, 0.15, 0.6]} />
+        {/* Oil Pan - More Detailed */}
+        <mesh position={[0, -0.4, 0]}>
+          <boxGeometry args={[1.1, 0.2, 0.9]} />
           <meshStandardMaterial 
             color={engineStatus.color}
             emissive={engineStatus.emissive}
             emissiveIntensity={engineStatus.intensity}
             metalness={0.6}
+            roughness={0.5}
+          />
+        </mesh>
+        
+        {/* Intake Manifold - V8 Style */}
+        <mesh position={[0, 0.4, 0]}>
+          <boxGeometry args={[0.9, 0.15, 0.6]} />
+          <meshStandardMaterial 
+            color="#333333"
+            emissive={engineStatus.emissive}
+            emissiveIntensity={engineStatus.intensity * 0.6}
+            metalness={0.7}
             roughness={0.4}
           />
         </mesh>
         
-        {engineStatus.glow && (
-          <PulsingLight 
-            position={[1.4, 0.4, 0]} 
-            color={engineStatus.color} 
-            intensity={engineStatus.intensity * 2}
-            pulse={engineStatus.pulse}
+        {/* Exhaust Manifolds - Left and Right */}
+        <mesh position={[-0.3, 0.3, 0.4]}>
+          <boxGeometry args={[0.8, 0.1, 0.2]} />
+          <meshStandardMaterial 
+            color="#aa4400"
+            emissive="#cc2200"
+            emissiveIntensity={0.2}
+            metalness={0.5}
+            roughness={0.6}
           />
+        </mesh>
+        <mesh position={[-0.3, 0.3, -0.4]}>
+          <boxGeometry args={[0.8, 0.1, 0.2]} />
+          <meshStandardMaterial 
+            color="#aa4400"
+            emissive="#cc2200"
+            emissiveIntensity={0.2}
+            metalness={0.5}
+            roughness={0.6}
+          />
+        </mesh>
+        
+        {/* Alternator */}
+        <mesh position={[0.4, 0.1, -0.3]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.15]} />
+          <meshStandardMaterial 
+            color="#222222"
+            emissive={engineStatus.emissive}
+            emissiveIntensity={engineStatus.intensity * 0.4}
+            metalness={0.3}
+          />
+        </mesh>
+        
+        {/* Water Pump */}
+        <mesh position={[0.5, 0.2, 0]}>
+          <cylinderGeometry args={[0.07, 0.07, 0.12]} />
+          <meshStandardMaterial 
+            color="#555555"
+            emissive={engineStatus.emissive}
+            emissiveIntensity={engineStatus.intensity * 0.3}
+            metalness={0.6}
+          />
+        </mesh>
+        
+        {/* Serpentine Belt */}
+        <mesh position={[0.45, 0.15, -0.15]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.15, 0.01, 8, 16]} />
+          <meshStandardMaterial 
+            color="#111111"
+            roughness={0.9}
+            metalness={0.1}
+          />
+        </mesh>
+        
+        {/* Enhanced Lighting Effects */}
+        {engineStatus.glow && (
+          <>
+            <PulsingLight 
+              position={[0, 0, 0]} 
+              color={engineStatus.color} 
+              intensity={engineStatus.intensity * 3}
+              pulse={engineStatus.pulse}
+            />
+            <PulsingLight 
+              position={[-0.2, 0.5, 0.2]} 
+              color={engineStatus.color} 
+              intensity={engineStatus.intensity * 2}
+              pulse={engineStatus.pulse}
+            />
+            <PulsingLight 
+              position={[-0.2, 0.5, -0.2]} 
+              color={engineStatus.color} 
+              intensity={engineStatus.intensity * 2}
+              pulse={engineStatus.pulse}
+            />
+          </>
         )}
       </group>
 
